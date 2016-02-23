@@ -33,6 +33,27 @@ class AsyncTest: XCTestCase {
         }
     }
 
+    func testToEventuallyPositiveMatchesWithCustomDefaultTimeout() {
+        AsyncDefaults.Timeout = 2
+        defer {
+            AsyncDefaults.Timeout = 1
+        }
+
+        var value = 0
+
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
+            NSThread.sleepForTimeInterval(1.1)
+            value = 1
+        }
+        expect { value }.toEventually(equal(1))
+
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
+            NSThread.sleepForTimeInterval(1.1)
+            value = 0
+        }
+        expect { value }.toEventuallyNot(equal(1))
+    }
+
     func testWaitUntilPositiveMatches() {
         waitUntil { done in
             done()
